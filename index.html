@@ -9,7 +9,7 @@
       font-family: system-ui, Arial, sans-serif;
       margin: 0;
       padding: 24px;
-      background: #f7f7fb;
+      background: #d9c7f5;
       color: #222;
     }
 
@@ -79,89 +79,77 @@
   <div id="consonants" class="grid"></div>
 
   <div class="note">
-    Note: Pronunciation depends on whether your browser/device has a Hindi voice installed.
-    Chrome and Edge usually work well.
+    Pronunciation is played from local MP3 files saved with this project for each Hindi letter.
   </div>
 
   <script>
     const vowels = [
-      { letter: "अ", roman: "a" },
-      { letter: "आ", roman: "aa" },
-      { letter: "इ", roman: "i" },
-      { letter: "ई", roman: "ee" },
-      { letter: "उ", roman: "u" },
-      { letter: "ऊ", roman: "oo" },
-      { letter: "ऋ", roman: "ri" },
-      { letter: "ए", roman: "e" },
-      { letter: "ऐ", roman: "ai" },
-      { letter: "ओ", roman: "o" },
-      { letter: "औ", roman: "au" },
-      { letter: "अं", roman: "am" },
-      { letter: "अः", roman: "ah" }
+      { letter: "अ", roman: "a", audio: "audio/vowels/a.mp3" },
+      { letter: "आ", roman: "aa", audio: "audio/vowels/aa.mp3" },
+      { letter: "इ", roman: "i", audio: "audio/vowels/i.mp3" },
+      { letter: "ई", roman: "ee", audio: "audio/vowels/ee.mp3" },
+      { letter: "उ", roman: "u", audio: "audio/vowels/u.mp3" },
+      { letter: "ऊ", roman: "oo", audio: "audio/vowels/oo.mp3" },
+      { letter: "ऋ", roman: "ri", audio: "audio/vowels/ri.mp3" },
+      { letter: "ए", roman: "e", audio: "audio/vowels/e.mp3" },
+      { letter: "ऐ", roman: "ai", audio: "audio/vowels/ai.mp3" },
+      { letter: "ओ", roman: "o", audio: "audio/vowels/o.mp3" },
+      { letter: "औ", roman: "au", audio: "audio/vowels/au.mp3" },
+      { letter: "अं", roman: "am", audio: "audio/vowels/am.mp3" },
+      { letter: "अः", roman: "ah", audio: "audio/vowels/ah.mp3" }
     ];
 
     const consonants = [
-      { letter: "क", roman: "ka" },
-      { letter: "ख", roman: "kha" },
-      { letter: "ग", roman: "ga" },
-      { letter: "घ", roman: "gha" },
-      { letter: "ङ", roman: "nga" },
+      { letter: "क", roman: "ka", audio: "audio/consonants/ka.mp3" },
+      { letter: "ख", roman: "kha", audio: "audio/consonants/kha.mp3" },
+      { letter: "ग", roman: "ga", audio: "audio/consonants/ga.mp3" },
+      { letter: "घ", roman: "gha", audio: "audio/consonants/gha.mp3" },
+      { letter: "ङ", roman: "nga", audio: "audio/consonants/nga.mp3" },
 
-      { letter: "च", roman: "cha" },
-      { letter: "छ", roman: "chha" },
-      { letter: "ज", roman: "ja" },
-      { letter: "झ", roman: "jha" },
-      { letter: "ञ", roman: "nya" },
+      { letter: "च", roman: "cha", audio: "audio/consonants/cha.mp3" },
+      { letter: "छ", roman: "chha", audio: "audio/consonants/chha.mp3" },
+      { letter: "ज", roman: "ja", audio: "audio/consonants/ja.mp3" },
+      { letter: "झ", roman: "jha", audio: "audio/consonants/jha.mp3" },
+      { letter: "ञ", roman: "nya", audio: "audio/consonants/nya.mp3" },
 
-      { letter: "ट", roman: "ta" },
-      { letter: "ठ", roman: "tha" },
-      { letter: "ड", roman: "da" },
-      { letter: "ढ", roman: "dha" },
-      { letter: "ण", roman: "na" },
+      { letter: "ट", roman: "ta", audio: "audio/consonants/ta_1.mp3" },
+      { letter: "ठ", roman: "tha", audio: "audio/consonants/tha_1.mp3" },
+      { letter: "ड", roman: "da", audio: "audio/consonants/da_1.mp3" },
+      { letter: "ढ", roman: "dha", audio: "audio/consonants/dha_1.mp3" },
+      { letter: "ण", roman: "na", audio: "audio/consonants/na_1.mp3" },
 
-      { letter: "त", roman: "ta" },
-      { letter: "थ", roman: "tha" },
-      { letter: "द", roman: "da" },
-      { letter: "ध", roman: "dha" },
-      { letter: "न", roman: "na" },
+      { letter: "त", roman: "ta", audio: "audio/consonants/ta_2.mp3" },
+      { letter: "थ", roman: "tha", audio: "audio/consonants/tha_2.mp3" },
+      { letter: "द", roman: "da", audio: "audio/consonants/da_2.mp3" },
+      { letter: "ध", roman: "dha", audio: "audio/consonants/dha_2.mp3" },
+      { letter: "न", roman: "na", audio: "audio/consonants/na_2.mp3" },
 
-      { letter: "प", roman: "pa" },
-      { letter: "फ", roman: "pha" },
-      { letter: "ब", roman: "ba" },
-      { letter: "भ", roman: "bha" },
-      { letter: "म", roman: "ma" },
+      { letter: "प", roman: "pa", audio: "audio/consonants/pa.mp3" },
+      { letter: "फ", roman: "pha", audio: "audio/consonants/pha.mp3" },
+      { letter: "ब", roman: "ba", audio: "audio/consonants/ba.mp3" },
+      { letter: "भ", roman: "bha", audio: "audio/consonants/bha.mp3" },
+      { letter: "म", roman: "ma", audio: "audio/consonants/ma.mp3" },
 
-      { letter: "य", roman: "ya" },
-      { letter: "र", roman: "ra" },
-      { letter: "ल", roman: "la" },
-      { letter: "व", roman: "va" },
+      { letter: "य", roman: "ya", audio: "audio/consonants/ya.mp3" },
+      { letter: "र", roman: "ra", audio: "audio/consonants/ra.mp3" },
+      { letter: "ल", roman: "la", audio: "audio/consonants/la.mp3" },
+      { letter: "व", roman: "va", audio: "audio/consonants/va.mp3" },
 
-      { letter: "श", roman: "sha" },
-      { letter: "ष", roman: "sha" },
-      { letter: "स", roman: "sa" },
-      { letter: "ह", roman: "ha" },
+      { letter: "श", roman: "sha", audio: "audio/consonants/sha_1.mp3" },
+      { letter: "ष", roman: "sha", audio: "audio/consonants/sha_2.mp3" },
+      { letter: "स", roman: "sa", audio: "audio/consonants/sa.mp3" },
+      { letter: "ह", roman: "ha", audio: "audio/consonants/ha.mp3" },
 
-      { letter: "क्ष", roman: "ksha" },
-      { letter: "त्र", roman: "tra" },
-      { letter: "ज्ञ", roman: "gya" }
+      { letter: "क्ष", roman: "ksha", audio: "audio/consonants/ksha.mp3" },
+      { letter: "त्र", roman: "tra", audio: "audio/consonants/tra.mp3" },
+      { letter: "ज्ञ", roman: "gya", audio: "audio/consonants/gya.mp3" }
     ];
 
-    function speakHindi(text) {
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "hi-IN";
-      utterance.rate = 0.75;
-      utterance.pitch = 1;
-
-      const voices = window.speechSynthesis.getVoices();
-      const hindiVoice = voices.find(v => v.lang === "hi-IN" || v.lang.startsWith("hi"));
-
-      if (hindiVoice) {
-        utterance.voice = hindiVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
+    function playPronunciation(audioPath) {
+      const audio = new Audio(audioPath);
+      audio.play().catch(() => {
+        // Ignore playback issues if the browser blocks autoplay or audio is unavailable.
+      });
     }
 
     function renderLetters(containerId, letters) {
@@ -169,16 +157,13 @@
 
       letters.forEach(item => {
         const button = document.createElement("button");
+        button.type = "button";
         button.className = "letter";
         button.innerHTML = `${item.letter}<span class="roman">${item.roman}</span>`;
-        button.onclick = () => speakHindi(item.letter);
+        button.onclick = () => playPronunciation(item.audio);
         container.appendChild(button);
       });
     }
-
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
 
     renderLetters("vowels", vowels);
     renderLetters("consonants", consonants);
