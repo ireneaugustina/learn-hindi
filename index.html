@@ -148,10 +148,16 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .trace-card.grade-correct,
-      .trace-card.grade-incorrect,
-      .confetti-piece {
-        animation-duration: 1ms;
+      .trace-card.grade-correct {
+        animation: none;
+        background: #a8e6b0;
+        border-color: #31934a;
+      }
+
+      .trace-card.grade-incorrect {
+        animation: none;
+        background: #f4aaaa;
+        border-color: #c64d4d;
       }
     }
 
@@ -211,6 +217,7 @@
     }
 
     .practice-guide,
+    .practice-guide-source,
     .practice-canvas {
       position: absolute;
       inset: 0;
@@ -218,7 +225,16 @@
       height: 100%;
     }
 
-    .practice-guide text {
+    .practice-guide {
+      pointer-events: none;
+    }
+
+    .practice-guide-source {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .practice-guide-source text {
       fill: none;
       stroke: #999;
       stroke-width: 2;
@@ -316,9 +332,10 @@
       <span id="practice-roman" class="roman"></span>
     </div>
     <div class="practice-pad">
-      <svg class="practice-guide" viewBox="0 0 300 260" aria-hidden="true">
+      <svg class="practice-guide-source" viewBox="0 0 300 260" aria-hidden="true">
         <text id="practice-glyph" x="150" y="130" text-anchor="middle" dominant-baseline="central"></text>
       </svg>
+      <canvas class="practice-guide" aria-hidden="true"></canvas>
       <canvas class="practice-canvas" aria-label="Draw over the dotted letter"></canvas>
     </div>
     <div class="practice-controls">
@@ -399,12 +416,15 @@
 
     let isTracing = false;
     const practiceDialog = document.getElementById("practice-dialog");
+    const practiceGuide = document.querySelector(".practice-guide");
+    const practiceGuideContext = practiceGuide.getContext("2d");
     const practiceCanvas = document.querySelector(".practice-canvas");
     const practiceContext = practiceCanvas.getContext("2d");
     let isDrawing = false;
     let practiceHasInk = false;
     let activePracticeItem = null;
     let activePracticeCard = null;
+    let practiceGuideReady = Promise.resolve();
 
     function resizePracticeCanvas() {
       const bounds = practiceCanvas.getBoundingClientRect();
@@ -429,16 +449,16 @@
       practiceHasInk = false;
       clearPractice();
       practiceDialog.showModal();
-      requestAnimationFrame(() => {
+      practiceGuideReady = (async () => {
         resizePracticeCanvas();
+        await renderPracticeGuide(item);
         if (!item.traceImage) return;
         const image = new Image();
-        image.onload = () => {
-          practiceContext.drawImage(image, 0, 0, practiceCanvas.clientWidth, practiceCanvas.clientHeight);
-          practiceHasInk = true;
-        };
         image.src = item.traceImage;
-      });
+        await image.decode();
+        practiceContext.drawImage(image, 0, 0, practiceCanvas.clientWidth, practiceCanvas.clientHeight);
+        practiceHasInk = true;
+      })();
     }
 
     function clearPractice() {
@@ -446,6 +466,126 @@
       practiceContext.setTransform(1, 0, 0, 1, 0, 0);
       practiceContext.clearRect(0, 0, practiceCanvas.width, practiceCanvas.height);
       resizePracticeCanvas();
+    }
+
+    function thinMask(mask, width, height) {
+      let changed;
+
+      do {
+        changed = false;
+        for (let pass = 0; pass < 2; pass++) {
+          const pixelsToRemove = [];
+          for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+              const index = y * width + x;
+              if (!mask[index]) continue;
+              const neighbors = [
+                mask[index - width], mask[index - width + 1], mask[index + 1],
+                mask[index + width + 1], mask[index + width], mask[index + width - 1],
+                mask[index - 1], mask[index - width - 1]
+              ];
+              const neighborCount = neighbors.reduce((sum, value) => sum + value, 0);
+              if (neighborCount < 2 || neighborCount > 6) continue;
+              let transitions = 0;
+              for (let neighbor = 0; neighbor < neighbors.length; neighbor++) {
+                if (!neighbors[neighbor] && neighbors[(neighbor + 1) % neighbors.length]) transitions++;
+              }
+              if (transitions !== 1) continue;
+              const [top, , right, , bottom, , left] = neighbors;
+              const removable = pass === 0
+                ? !(top && right && bottom) && !(right && bottom && left)
+                : !(top && right && left) && !(top && bottom && left);
+              if (removable) pixelsToRemove.push(index);
+            }
+          }
+
+          for (const index of pixelsToRemove) mask[index] = 0;
+          if (pixelsToRemove.length) changed = true;
+        }
+      } while (changed);
+
+      return mask;
+    }
+
+    async function renderPracticeGuide(item) {
+      const svg = document.querySelector(".practice-guide-source").cloneNode(true);
+      const glyph = svg.querySelector("text");
+      const style = getComputedStyle(document.getElementById("practice-glyph"));
+      svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svg.setAttribute("width", "300");
+      svg.setAttribute("height", "260");
+      glyph.textContent = item.letter;
+      glyph.setAttribute("font-size", Array.from(item.letter).length > 2 ? "150" : "190");
+      glyph.setAttribute("fill", "#000");
+      glyph.setAttribute("stroke", "none");
+
+      const image = new Image();
+      const imageUrl = URL.createObjectURL(new Blob(
+        [new XMLSerializer().serializeToString(svg)],
+        { type: "image/svg+xml" }
+      ));
+      try {
+        image.src = imageUrl;
+        await image.decode();
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+
+      const width = 300;
+      const height = 260;
+      const maskCanvas = document.createElement("canvas");
+      maskCanvas.width = width;
+      maskCanvas.height = height;
+      const maskContext = maskCanvas.getContext("2d");
+      maskContext.drawImage(image, 0, 0, width, height);
+      const imageData = maskContext.getImageData(0, 0, width, height).data;
+      const mask = new Uint8Array(width * height);
+      for (let index = 0; index < mask.length; index++) {
+        mask[index] = imageData[index * 4 + 3] > 96 ? 1 : 0;
+      }
+      thinMask(mask, width, height);
+
+      const bounds = practiceGuide.getBoundingClientRect();
+      const pixelRatio = window.devicePixelRatio || 1;
+      practiceGuide.width = Math.round(bounds.width * pixelRatio);
+      practiceGuide.height = Math.round(bounds.height * pixelRatio);
+      practiceGuideContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      const scale = Math.min(bounds.width / width, bounds.height / height);
+      practiceGuideContext.translate((bounds.width - width * scale) / 2, (bounds.height - height * scale) / 2);
+      practiceGuideContext.scale(scale, scale);
+
+      const distances = new Int32Array(mask.length);
+      distances.fill(-1);
+      const queue = new Int32Array(mask.length);
+      const offsets = [-width - 1, -width, -width + 1, -1, 1, width - 1, width, width + 1];
+      for (let start = 0; start < mask.length; start++) {
+        if (!mask[start] || distances[start] !== -1) continue;
+        let head = 0;
+        let tail = 0;
+        queue[tail++] = start;
+        distances[start] = 0;
+        practiceGuideContext.beginPath();
+        while (head < tail) {
+          const index = queue[head++];
+          const x = index % width;
+          const y = Math.floor(index / width);
+          if (distances[index] % 5 === 0) {
+            practiceGuideContext.moveTo(x + 2.2, y + 0.5);
+            practiceGuideContext.arc(x + 0.5, y + 0.5, 1.7, 0, Math.PI * 2);
+          }
+          for (const offset of offsets) {
+            const neighbor = index + offset;
+            const neighborX = neighbor % width;
+            const neighborY = Math.floor(neighbor / width);
+            if (neighborX < 0 || neighborX >= width || neighborY < 0 || neighborY >= height) continue;
+            if (!mask[neighbor] || distances[neighbor] !== -1) continue;
+            distances[neighbor] = distances[index] + 1;
+            queue[tail++] = neighbor;
+          }
+        }
+        practiceGuideContext.fillStyle = "#999";
+        practiceGuideContext.fill();
+      }
     }
 
     function renderSavedTrace(card, item) {
@@ -523,39 +663,13 @@
     }
 
     async function scorePractice() {
-      const reference = document.querySelector(".practice-guide").cloneNode(true);
-      const referenceGlyph = reference.querySelector("text");
-      const glyphStyle = getComputedStyle(document.getElementById("practice-glyph"));
-      reference.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      reference.setAttribute("width", String(practiceCanvas.clientWidth));
-      reference.setAttribute("height", String(practiceCanvas.clientHeight));
-      referenceGlyph.setAttribute("fill", "none");
-      referenceGlyph.setAttribute("stroke", "#000");
-      referenceGlyph.setAttribute("stroke-width", glyphStyle.strokeWidth);
-      referenceGlyph.setAttribute("stroke-dasharray", "none");
-      referenceGlyph.setAttribute("stroke-linecap", glyphStyle.strokeLinecap);
-      referenceGlyph.setAttribute("stroke-linejoin", glyphStyle.strokeLinejoin);
-      referenceGlyph.setAttribute("font-family", glyphStyle.fontFamily);
-
-      const image = new Image();
-      const imageUrl = URL.createObjectURL(new Blob(
-        [new XMLSerializer().serializeToString(reference)],
-        { type: "image/svg+xml" }
-      ));
-      try {
-        image.src = imageUrl;
-        await image.decode();
-      } finally {
-        URL.revokeObjectURL(imageUrl);
-      }
-
       const width = practiceCanvas.clientWidth;
       const height = practiceCanvas.clientHeight;
       const targetCanvas = document.createElement("canvas");
       targetCanvas.width = width;
       targetCanvas.height = height;
       const targetContext = targetCanvas.getContext("2d");
-      targetContext.drawImage(image, 0, 0, width, height);
+      targetContext.drawImage(practiceGuide, 0, 0, width, height);
       const targetPixels = targetContext.getImageData(0, 0, width, height).data;
       const actualCanvas = document.createElement("canvas");
       actualCanvas.width = width;
@@ -597,7 +711,8 @@
       void card.offsetWidth;
       card.classList.add(animationClass);
       card.addEventListener("animationend", () => card.classList.remove(animationClass), { once: true });
-      if (!isCorrect) return;
+      window.setTimeout(() => card.classList.remove(animationClass), 850);
+      if (!isCorrect || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const bounds = card.getBoundingClientRect();
       const colors = ["#e94f64", "#2b9b70", "#f1b83b", "#3983c4", "#e87832"];
@@ -618,6 +733,7 @@
     }
 
     async function finishPractice() {
+      await practiceGuideReady;
       if (activePracticeItem && activePracticeCard) {
         if (practiceHasInk) {
           const accuracy = await scorePractice();
