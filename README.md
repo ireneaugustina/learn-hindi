@@ -10,6 +10,7 @@ This project is a lightweight interactive webpage that displays Hindi letters an
 
 - Interactive grid of Hindi vowels and consonants
 - Click-to-hear pronunciation for each letter
+- On-screen tracing practice and printable dotted worksheets for every vowel and consonant
 - Romanized transliteration for easier reading
 - Clean, minimal interface with no framework or build setup required
 - Works as a static web page
@@ -35,6 +36,8 @@ Then visit:
 ```text
 http://localhost:8000
 ```
+
+Select **Practice tracing**, then select any dotted letter to trace it on screen with a mouse or touchscreen. **Done** keeps your trace on the letter card and restores it when reopened; use **Clear** to start again, or choose **Print worksheet** to practice on paper.
 
 ## Notes
 

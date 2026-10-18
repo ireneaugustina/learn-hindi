@@ -24,6 +24,31 @@
       margin-bottom: 32px;
     }
 
+    .toolbar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 0 24px;
+    }
+
+    .toolbar button {
+      padding: 10px 16px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: white;
+      color: #222;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .toolbar button:hover {
+      background: #eef3ff;
+    }
+
+    .toolbar button[hidden] {
+      display: none;
+    }
+
     h2 {
       margin-top: 32px;
       border-bottom: 2px solid #ddd;
@@ -59,6 +84,169 @@
       margin-top: 6px;
     }
 
+    .trace-card {
+      position: relative;
+      display: grid;
+      min-height: 150px;
+      align-content: center;
+      justify-items: center;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .saved-trace {
+      position: absolute;
+      object-fit: fill;
+      pointer-events: none;
+    }
+
+    .trace-card:hover {
+      background: #eef3ff;
+      border-color: #9aafd8;
+    }
+
+    .trace-card.grade-correct {
+      animation: grade-correct 850ms ease-out;
+    }
+
+    .trace-card.grade-incorrect {
+      animation: grade-incorrect 850ms ease-out;
+    }
+
+    @keyframes grade-correct {
+      0%, 100% { background: white; }
+      25%, 65% { background: #a8e6b0; border-color: #31934a; }
+    }
+
+    @keyframes grade-incorrect {
+      0%, 100% { background: white; }
+      25%, 65% { background: #f4aaaa; border-color: #c64d4d; }
+    }
+
+    .confetti-piece {
+      position: fixed;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 12px;
+      border-radius: 1px;
+      background: var(--confetti-color);
+      pointer-events: none;
+      animation: confetti-burst 900ms ease-out forwards;
+    }
+
+    @keyframes confetti-burst {
+      to {
+        opacity: 0;
+        transform: translate(var(--confetti-x), var(--confetti-y)) rotate(var(--confetti-rotation));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .trace-card.grade-correct,
+      .trace-card.grade-incorrect,
+      .confetti-piece {
+        animation-duration: 1ms;
+      }
+    }
+
+    .trace-glyph {
+      width: 100%;
+      height: 112px;
+      overflow: visible;
+    }
+
+    .trace-glyph text {
+      fill: none;
+      stroke: #777;
+      stroke-width: 1.5;
+      stroke-dasharray: 1 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      font-family: "Nirmala UI", "Mangal", sans-serif;
+    }
+
+    .practice-dialog {
+      box-sizing: border-box;
+      width: min(92vw, 560px);
+      max-width: none;
+      max-height: calc(100vh - 24px);
+      padding: 20px;
+      border: 1px solid #bbb;
+      border-radius: 10px;
+      color: #222;
+    }
+
+    .practice-dialog::backdrop {
+      background: rgba(20, 25, 35, 0.55);
+    }
+
+    .practice-header,
+    .practice-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .practice-header h2 {
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+
+    .practice-pad {
+      position: relative;
+      height: min(55vh, 360px);
+      min-height: 240px;
+      margin: 16px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .practice-guide,
+    .practice-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .practice-guide text {
+      fill: none;
+      stroke: #999;
+      stroke-width: 2;
+      stroke-dasharray: 2 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      font-family: "Nirmala UI", "Mangal", sans-serif;
+    }
+
+    .practice-canvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .practice-controls button {
+      padding: 10px 16px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: white;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .practice-controls button:hover {
+      background: #eef3ff;
+    }
+
     .note {
       margin-top: 32px;
       padding: 12px;
@@ -66,11 +254,51 @@
       border-radius: 8px;
       color: #5b4a00;
     }
+
+    @media print {
+      body {
+        padding: 0;
+        background: white;
+      }
+
+      .toolbar,
+      .subtitle,
+      .note {
+        display: none;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+      }
+
+      h2 {
+        margin: 16px 0 8px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+      }
+
+      .trace-card {
+        min-height: 125px;
+        border-color: #bbb;
+        break-inside: avoid;
+      }
+
+      .trace-glyph {
+        height: 100px;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Learn Hindi Letters</h1>
   <p class="subtitle">Click a letter to hear its pronunciation</p>
+  <div class="toolbar">
+    <button id="mode-toggle" type="button" aria-pressed="false">Practice tracing</button>
+    <button id="print-button" type="button" hidden>Print worksheet</button>
+  </div>
 
   <h2>Vowels — स्वर</h2>
   <div id="vowels" class="grid"></div>
@@ -81,6 +309,23 @@
   <div class="note">
     Pronunciation is played from local MP3 files saved with this project for each Hindi letter.
   </div>
+
+  <dialog id="practice-dialog" class="practice-dialog" aria-labelledby="practice-title">
+    <div class="practice-header">
+      <h2 id="practice-title">Trace letter</h2>
+      <span id="practice-roman" class="roman"></span>
+    </div>
+    <div class="practice-pad">
+      <svg class="practice-guide" viewBox="0 0 300 260" aria-hidden="true">
+        <text id="practice-glyph" x="150" y="130" text-anchor="middle" dominant-baseline="central"></text>
+      </svg>
+      <canvas class="practice-canvas" aria-label="Draw over the dotted letter"></canvas>
+    </div>
+    <div class="practice-controls">
+      <button id="clear-practice" type="button">Clear</button>
+      <button id="close-practice" type="button">Done</button>
+    </div>
+  </dialog>
 
   <script>
     const vowels = [
@@ -152,10 +397,301 @@
       });
     }
 
+    let isTracing = false;
+    const practiceDialog = document.getElementById("practice-dialog");
+    const practiceCanvas = document.querySelector(".practice-canvas");
+    const practiceContext = practiceCanvas.getContext("2d");
+    let isDrawing = false;
+    let practiceHasInk = false;
+    let activePracticeItem = null;
+    let activePracticeCard = null;
+
+    function resizePracticeCanvas() {
+      const bounds = practiceCanvas.getBoundingClientRect();
+      const pixelRatio = window.devicePixelRatio || 1;
+      practiceCanvas.width = Math.round(bounds.width * pixelRatio);
+      practiceCanvas.height = Math.round(bounds.height * pixelRatio);
+      practiceContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      practiceContext.lineWidth = 7;
+      practiceContext.lineCap = "round";
+      practiceContext.lineJoin = "round";
+      practiceContext.strokeStyle = "#2878a5";
+    }
+
+    function openPractice(item) {
+      activePracticeItem = item;
+      activePracticeCard = document.querySelector(`[data-letter="${item.letter}"]`);
+      document.getElementById("practice-title").textContent = `Trace ${item.letter}`;
+      document.getElementById("practice-roman").textContent = item.roman;
+      const glyph = document.getElementById("practice-glyph");
+      glyph.textContent = item.letter;
+      glyph.setAttribute("font-size", Array.from(item.letter).length > 2 ? "150" : "190");
+      practiceHasInk = false;
+      clearPractice();
+      practiceDialog.showModal();
+      requestAnimationFrame(() => {
+        resizePracticeCanvas();
+        if (!item.traceImage) return;
+        const image = new Image();
+        image.onload = () => {
+          practiceContext.drawImage(image, 0, 0, practiceCanvas.clientWidth, practiceCanvas.clientHeight);
+          practiceHasInk = true;
+        };
+        image.src = item.traceImage;
+      });
+    }
+
+    function clearPractice() {
+      practiceHasInk = false;
+      practiceContext.setTransform(1, 0, 0, 1, 0, 0);
+      practiceContext.clearRect(0, 0, practiceCanvas.width, practiceCanvas.height);
+      resizePracticeCanvas();
+    }
+
+    function renderSavedTrace(card, item) {
+      card.querySelector(".saved-trace")?.remove();
+      if (!item.tracePreview) return;
+      const preview = document.createElement("img");
+      preview.className = "saved-trace";
+      preview.src = item.tracePreview.image;
+      preview.dataset.sourceGlyphWidth = item.tracePreview.sourceGlyphWidth;
+      preview.dataset.sourceGlyphHeight = item.tracePreview.sourceGlyphHeight;
+      preview.alt = "";
+      card.appendChild(preview);
+      positionSavedTrace(card);
+    }
+
+    function positionSavedTrace(card) {
+      const preview = card.querySelector(".saved-trace");
+      if (!preview) return;
+      const cardBounds = card.getBoundingClientRect();
+      const glyphBounds = card.querySelector(".trace-glyph text").getBoundingClientRect();
+      const paddingX = 6 * glyphBounds.width / Number(preview.dataset.sourceGlyphWidth);
+      const paddingY = 6 * glyphBounds.height / Number(preview.dataset.sourceGlyphHeight);
+      preview.style.left = `${glyphBounds.left - cardBounds.left - paddingX}px`;
+      preview.style.top = `${glyphBounds.top - cardBounds.top - paddingY}px`;
+      preview.style.width = `${glyphBounds.width + paddingX * 2}px`;
+      preview.style.height = `${glyphBounds.height + paddingY * 2}px`;
+    }
+
+    function createTracePreview() {
+      const glyph = document.getElementById("practice-glyph");
+      const glyphBounds = glyph.getBoundingClientRect();
+      const canvasBounds = practiceCanvas.getBoundingClientRect();
+      const pixelRatioX = practiceCanvas.width / canvasBounds.width;
+      const pixelRatioY = practiceCanvas.height / canvasBounds.height;
+      const paddingX = Math.round(6 * pixelRatioX);
+      const paddingY = Math.round(6 * pixelRatioY);
+      const left = Math.max(0, Math.floor((glyphBounds.left - canvasBounds.left) * pixelRatioX) - paddingX);
+      const top = Math.max(0, Math.floor((glyphBounds.top - canvasBounds.top) * pixelRatioY) - paddingY);
+      const right = Math.min(practiceCanvas.width, Math.ceil((glyphBounds.right - canvasBounds.left) * pixelRatioX) + paddingX);
+      const bottom = Math.min(practiceCanvas.height, Math.ceil((glyphBounds.bottom - canvasBounds.top) * pixelRatioY) + paddingY);
+      if (right <= left || bottom <= top) return null;
+      const previewCanvas = document.createElement("canvas");
+      previewCanvas.width = right - left;
+      previewCanvas.height = bottom - top;
+      previewCanvas.getContext("2d").drawImage(
+        practiceCanvas,
+        left, top, previewCanvas.width, previewCanvas.height,
+        0, 0, previewCanvas.width, previewCanvas.height
+      );
+      return {
+        image: previewCanvas.toDataURL("image/png"),
+        sourceGlyphWidth: glyphBounds.width,
+        sourceGlyphHeight: glyphBounds.height
+      };
+    }
+
+    function expandMask(mask, width, height, radius) {
+      const expanded = new Uint8Array(mask.length);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (!mask[y * width + x]) continue;
+          for (let offsetY = -radius; offsetY <= radius; offsetY++) {
+            for (let offsetX = -radius; offsetX <= radius; offsetX++) {
+              if (offsetX * offsetX + offsetY * offsetY > radius * radius) continue;
+              const targetX = x + offsetX;
+              const targetY = y + offsetY;
+              if (targetX >= 0 && targetX < width && targetY >= 0 && targetY < height) {
+                expanded[targetY * width + targetX] = 1;
+              }
+            }
+          }
+        }
+      }
+      return expanded;
+    }
+
+    async function scorePractice() {
+      const reference = document.querySelector(".practice-guide").cloneNode(true);
+      const referenceGlyph = reference.querySelector("text");
+      const glyphStyle = getComputedStyle(document.getElementById("practice-glyph"));
+      reference.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      reference.setAttribute("width", String(practiceCanvas.clientWidth));
+      reference.setAttribute("height", String(practiceCanvas.clientHeight));
+      referenceGlyph.setAttribute("fill", "none");
+      referenceGlyph.setAttribute("stroke", "#000");
+      referenceGlyph.setAttribute("stroke-width", glyphStyle.strokeWidth);
+      referenceGlyph.setAttribute("stroke-dasharray", "none");
+      referenceGlyph.setAttribute("stroke-linecap", glyphStyle.strokeLinecap);
+      referenceGlyph.setAttribute("stroke-linejoin", glyphStyle.strokeLinejoin);
+      referenceGlyph.setAttribute("font-family", glyphStyle.fontFamily);
+
+      const image = new Image();
+      const imageUrl = URL.createObjectURL(new Blob(
+        [new XMLSerializer().serializeToString(reference)],
+        { type: "image/svg+xml" }
+      ));
+      try {
+        image.src = imageUrl;
+        await image.decode();
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+
+      const width = practiceCanvas.clientWidth;
+      const height = practiceCanvas.clientHeight;
+      const targetCanvas = document.createElement("canvas");
+      targetCanvas.width = width;
+      targetCanvas.height = height;
+      const targetContext = targetCanvas.getContext("2d");
+      targetContext.drawImage(image, 0, 0, width, height);
+      const targetPixels = targetContext.getImageData(0, 0, width, height).data;
+      const actualCanvas = document.createElement("canvas");
+      actualCanvas.width = width;
+      actualCanvas.height = height;
+      const actualContext = actualCanvas.getContext("2d");
+      actualContext.drawImage(practiceCanvas, 0, 0, width, height);
+      const actualPixels = actualContext.getImageData(0, 0, width, height).data;
+      const targetMask = new Uint8Array(width * height);
+      const actualMask = new Uint8Array(width * height);
+      let targetCount = 0;
+      let actualCount = 0;
+
+      for (let index = 0; index < targetMask.length; index++) {
+        targetMask[index] = targetPixels[index * 4 + 3] > 64 ? 1 : 0;
+        actualMask[index] = actualPixels[index * 4 + 3] > 64 ? 1 : 0;
+        targetCount += targetMask[index];
+        actualCount += actualMask[index];
+      }
+
+      if (!targetCount || !actualCount) return 0;
+      const radius = 7;
+      const nearTarget = expandMask(targetMask, width, height, radius);
+      const nearActual = expandMask(actualMask, width, height, radius);
+      let matchedActual = 0;
+      let matchedTarget = 0;
+      for (let index = 0; index < targetMask.length; index++) {
+        if (actualMask[index] && nearTarget[index]) matchedActual++;
+        if (targetMask[index] && nearActual[index]) matchedTarget++;
+      }
+
+      const precision = matchedActual / actualCount;
+      const recall = matchedTarget / targetCount;
+      return precision + recall ? Math.round(200 * precision * recall / (precision + recall)) : 0;
+    }
+
+    function flashCard(card, isCorrect) {
+      const animationClass = isCorrect ? "grade-correct" : "grade-incorrect";
+      card.classList.remove("grade-correct", "grade-incorrect");
+      void card.offsetWidth;
+      card.classList.add(animationClass);
+      card.addEventListener("animationend", () => card.classList.remove(animationClass), { once: true });
+      if (!isCorrect) return;
+
+      const bounds = card.getBoundingClientRect();
+      const colors = ["#e94f64", "#2b9b70", "#f1b83b", "#3983c4", "#e87832"];
+      for (let index = 0; index < 28; index++) {
+        const particle = document.createElement("span");
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 35 + Math.random() * 85;
+        particle.className = "confetti-piece";
+        particle.style.left = `${bounds.left + bounds.width / 2}px`;
+        particle.style.top = `${bounds.top + bounds.height / 2}px`;
+        particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+        particle.style.setProperty("--confetti-x", `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty("--confetti-y", `${Math.sin(angle) * distance}px`);
+        particle.style.setProperty("--confetti-rotation", `${Math.random() * 720 - 360}deg`);
+        particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        document.body.appendChild(particle);
+      }
+    }
+
+    async function finishPractice() {
+      if (activePracticeItem && activePracticeCard) {
+        if (practiceHasInk) {
+          const accuracy = await scorePractice();
+          const isCorrect = accuracy >= 90;
+          activePracticeCard.dataset.accuracy = String(accuracy);
+          activePracticeCard.setAttribute("aria-label", `Practice tracing ${activePracticeItem.letter}, ${activePracticeItem.roman}: ${accuracy}% accuracy`);
+          flashCard(activePracticeCard, isCorrect);
+        }
+        activePracticeItem.traceImage = practiceHasInk ? practiceCanvas.toDataURL("image/png") : null;
+        activePracticeItem.tracePreview = practiceHasInk ? createTracePreview() : null;
+        renderSavedTrace(activePracticeCard, activePracticeItem);
+      }
+      practiceDialog.close();
+    }
+
+    practiceCanvas.addEventListener("pointerdown", event => {
+      const bounds = practiceCanvas.getBoundingClientRect();
+      practiceContext.beginPath();
+      practiceContext.moveTo(event.clientX - bounds.left, event.clientY - bounds.top);
+      practiceCanvas.setPointerCapture(event.pointerId);
+      isDrawing = true;
+    });
+    practiceCanvas.addEventListener("pointermove", event => {
+      if (!isDrawing) return;
+      const bounds = practiceCanvas.getBoundingClientRect();
+      practiceContext.lineTo(event.clientX - bounds.left, event.clientY - bounds.top);
+      practiceContext.stroke();
+      practiceHasInk = true;
+    });
+    practiceCanvas.addEventListener("pointerup", () => {
+      isDrawing = false;
+      practiceContext.closePath();
+    });
+    practiceCanvas.addEventListener("pointercancel", () => {
+      isDrawing = false;
+      practiceContext.closePath();
+    });
+    document.getElementById("clear-practice").addEventListener("click", clearPractice);
+    document.getElementById("close-practice").addEventListener("click", () => void finishPractice());
+
     function renderLetters(containerId, letters) {
       const container = document.getElementById(containerId);
+      container.replaceChildren();
 
       letters.forEach(item => {
+        if (isTracing) {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "trace-card";
+          card.setAttribute("aria-label", `Practice tracing ${item.letter}, ${item.roman}`);
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.classList.add("trace-glyph");
+          svg.setAttribute("viewBox", "0 0 120 112");
+          svg.setAttribute("role", "img");
+          svg.setAttribute("aria-label", `Trace ${item.letter}`);
+          const glyph = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          glyph.setAttribute("x", "60");
+          glyph.setAttribute("y", "58");
+          glyph.setAttribute("text-anchor", "middle");
+          glyph.setAttribute("dominant-baseline", "central");
+          glyph.setAttribute("font-size", Array.from(item.letter).length > 2 ? "54" : "72");
+          glyph.textContent = item.letter;
+          svg.appendChild(glyph);
+          const roman = document.createElement("span");
+          roman.className = "roman";
+          roman.textContent = item.roman;
+          card.dataset.letter = item.letter;
+          card.append(svg, roman);
+          card.addEventListener("click", () => openPractice(item));
+          container.appendChild(card);
+          renderSavedTrace(card, item);
+          return;
+        }
+
         const button = document.createElement("button");
         button.type = "button";
         button.className = "letter";
@@ -165,8 +701,30 @@
       });
     }
 
-    renderLetters("vowels", vowels);
-    renderLetters("consonants", consonants);
+    function renderMode() {
+      document.body.classList.toggle("is-tracing", isTracing);
+      document.querySelector(".subtitle").textContent = isTracing
+        ? "Trace each dotted letter"
+        : "Click a letter to hear its pronunciation";
+      document.getElementById("mode-toggle").textContent = isTracing
+        ? "Hear pronunciation"
+        : "Practice tracing";
+      document.getElementById("mode-toggle").setAttribute("aria-pressed", String(isTracing));
+      document.getElementById("print-button").hidden = !isTracing;
+      renderLetters("vowels", vowels);
+      renderLetters("consonants", consonants);
+    }
+
+    document.getElementById("mode-toggle").addEventListener("click", () => {
+      isTracing = !isTracing;
+      renderMode();
+    });
+    document.getElementById("print-button").addEventListener("click", () => window.print());
+    window.addEventListener("resize", () => {
+      document.querySelectorAll(".trace-card").forEach(positionSavedTrace);
+    });
+
+    renderMode();
   </script>
 </body>
 </html>
