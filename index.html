@@ -117,6 +117,14 @@
       animation: grade-incorrect 850ms ease-out;
     }
 
+    .practice-pad.grade-correct {
+      animation: grade-correct 850ms ease-out;
+    }
+
+    .practice-pad.grade-incorrect {
+      animation: grade-incorrect 850ms ease-out;
+    }
+
     @keyframes grade-correct {
       0%, 100% { background: white; }
       25%, 65% { background: #a8e6b0; border-color: #31934a; }
@@ -155,6 +163,18 @@
       }
 
       .trace-card.grade-incorrect {
+        animation: none;
+        background: #f4aaaa;
+        border-color: #c64d4d;
+      }
+
+      .practice-pad.grade-correct {
+        animation: none;
+        background: #a8e6b0;
+        border-color: #31934a;
+      }
+
+      .practice-pad.grade-incorrect {
         animation: none;
         background: #f4aaaa;
         border-color: #c64d4d;
@@ -416,6 +436,7 @@
 
     let isTracing = false;
     const practiceDialog = document.getElementById("practice-dialog");
+    const practicePad = document.querySelector(".practice-pad");
     const practiceGuide = document.querySelector(".practice-guide");
     const practiceGuideContext = practiceGuide.getContext("2d");
     const practiceCanvas = document.querySelector(".practice-canvas");
@@ -518,6 +539,7 @@
       glyph.setAttribute("font-size", Array.from(item.letter).length > 2 ? "150" : "190");
       glyph.setAttribute("fill", "#000");
       glyph.setAttribute("stroke", "none");
+      glyph.setAttribute("font-family", style.fontFamily);
 
       const image = new Image();
       const imageUrl = URL.createObjectURL(new Blob(
@@ -734,18 +756,21 @@
 
     async function finishPractice() {
       await practiceGuideReady;
+      let feedbackDuration = 0;
       if (activePracticeItem && activePracticeCard) {
         if (practiceHasInk) {
           const accuracy = await scorePractice();
           const isCorrect = accuracy >= 90;
           activePracticeCard.dataset.accuracy = String(accuracy);
           activePracticeCard.setAttribute("aria-label", `Practice tracing ${activePracticeItem.letter}, ${activePracticeItem.roman}: ${accuracy}% accuracy`);
-          flashCard(activePracticeCard, isCorrect);
+          flashCard(practicePad, isCorrect);
+          feedbackDuration = 850;
         }
         activePracticeItem.traceImage = practiceHasInk ? practiceCanvas.toDataURL("image/png") : null;
         activePracticeItem.tracePreview = practiceHasInk ? createTracePreview() : null;
         renderSavedTrace(activePracticeCard, activePracticeItem);
       }
+      if (feedbackDuration) await new Promise(resolve => window.setTimeout(resolve, feedbackDuration));
       practiceDialog.close();
     }
 
