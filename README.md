@@ -37,7 +37,7 @@ Then visit:
 http://localhost:8000
 ```
 
-Select **Practice tracing**, then select any dotted letter to trace it on screen with a mouse or touchscreen. **Done** keeps your trace on the letter card and restores it when reopened; use **Clear** to start again, or choose **Print worksheet** to practice on paper.
+Select **Practice tracing**, then select any dotted letter to trace it on screen with a mouse or touchscreen. **Done** keeps your trace on the letter card and restores it when reopened; use **Clear** to start again or **Clear all traces** to reset every letter. Choose **Print worksheet** to practice on paper.
 
 ## Notes
 

@@ -334,6 +334,7 @@
   <div class="toolbar">
     <button id="mode-toggle" type="button" aria-pressed="false">Practice tracing</button>
     <button id="print-button" type="button" hidden>Print worksheet</button>
+    <button id="clear-all-traces" type="button" hidden>Clear all traces</button>
   </div>
 
   <h2>Vowels — स्वर</h2>
@@ -623,6 +624,21 @@
       positionSavedTrace(card);
     }
 
+    function clearAllTraces() {
+      [...vowels, ...consonants].forEach(item => {
+        item.traceImage = null;
+        item.tracePreview = null;
+      });
+
+      document.querySelectorAll(".trace-card").forEach(card => {
+        card.querySelector(".saved-trace")?.remove();
+        card.classList.remove("grade-correct", "grade-incorrect");
+        delete card.dataset.accuracy;
+        const item = [...vowels, ...consonants].find(letter => letter.letter === card.dataset.letter);
+        if (item) card.setAttribute("aria-label", `Practice tracing ${item.letter}, ${item.roman}`);
+      });
+    }
+
     function positionSavedTrace(card) {
       const preview = card.querySelector(".saved-trace");
       if (!preview) return;
@@ -852,6 +868,7 @@
         : "Practice tracing";
       document.getElementById("mode-toggle").setAttribute("aria-pressed", String(isTracing));
       document.getElementById("print-button").hidden = !isTracing;
+      document.getElementById("clear-all-traces").hidden = !isTracing;
       renderLetters("vowels", vowels);
       renderLetters("consonants", consonants);
     }
@@ -861,6 +878,7 @@
       renderMode();
     });
     document.getElementById("print-button").addEventListener("click", () => window.print());
+    document.getElementById("clear-all-traces").addEventListener("click", clearAllTraces);
     window.addEventListener("resize", () => {
       document.querySelectorAll(".trace-card").forEach(positionSavedTrace);
     });
